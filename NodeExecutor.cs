@@ -56,8 +56,12 @@ namespace KRPC.MechJeb {
 
 		[KRPCProperty]
 		public double Tolerance {
-			get => EditableDouble.Get(this.tolerance);
-			set => EditableDouble.Set(this.tolerance, value);
+			get => this.tolerance != null ? EditableDouble.Get(this.tolerance) : 0.0;
+			set {
+				if(this.tolerance == null)
+					throw new MJServiceException("Node executor tolerance is unavailable for this MechJeb build.");
+				EditableDouble.Set(this.tolerance, value);
+			}
 		}
 
 		[KRPCMethod]

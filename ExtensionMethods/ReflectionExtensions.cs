@@ -3,6 +3,8 @@ using System.Reflection;
 
 namespace KRPC.MechJeb.ExtensionMethods {
 	public static class ReflectionExtensions {
+		private const BindingFlags AnyMemberFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
 		public static T CreateInstance<T>(this Type type, object[] args) {
 			try {
 				Type[] types = Type.EmptyTypes;
@@ -21,27 +23,39 @@ namespace KRPC.MechJeb.ExtensionMethods {
 		}
 
 		public static FieldInfo GetCheckedField(this Type type, string name) {
-			return type.GetField(name).CheckIfExists(type, name);
+			return type.GetField(name, AnyMemberFlags) ??
+				type.GetField(name, AnyMemberFlags | BindingFlags.IgnoreCase)
+					.CheckIfExists(type, name);
 		}
 
 		public static FieldInfo GetCheckedField(this Type type, string name, BindingFlags bindingAttr) {
-			return type.GetField(name, bindingAttr).CheckIfExists(type, name);
+			return type.GetField(name, bindingAttr) ??
+				type.GetField(name, bindingAttr | BindingFlags.IgnoreCase)
+					.CheckIfExists(type, name);
 		}
 
 		public static PropertyInfo GetCheckedProperty(this Type type, string name) {
-			return type.GetProperty(name).CheckIfExists(type, name);
+			return type.GetProperty(name, AnyMemberFlags) ??
+				type.GetProperty(name, AnyMemberFlags | BindingFlags.IgnoreCase)
+					.CheckIfExists(type, name);
 		}
 
 		public static MethodInfo GetCheckedMethod(this Type type, string name) {
-			return type.GetMethod(name).CheckIfExists(type, name + "()");
+			return type.GetMethod(name, AnyMemberFlags) ??
+				type.GetMethod(name, AnyMemberFlags | BindingFlags.IgnoreCase)
+					.CheckIfExists(type, name + "()");
 		}
 
 		public static MethodInfo GetCheckedMethod(this Type type, string name, Type[] types) {
-			return type.GetMethod(name, types).CheckIfExists(type, name + "()");
+			return type.GetMethod(name, AnyMemberFlags, null, types, null) ??
+				type.GetMethod(name, AnyMemberFlags | BindingFlags.IgnoreCase, null, types, null)
+					.CheckIfExists(type, name + "()");
 		}
 
 		public static MethodInfo GetCheckedMethod(this Type type, string name, BindingFlags bindingAttr) {
-			return type.GetMethod(name, bindingAttr).CheckIfExists(type, name + "()");
+			return type.GetMethod(name, bindingAttr) ??
+				type.GetMethod(name, bindingAttr | BindingFlags.IgnoreCase)
+					.CheckIfExists(type, name + "()");
 		}
 
 		private static T CheckIfExists<T>(this T obj, Type type, string name) {

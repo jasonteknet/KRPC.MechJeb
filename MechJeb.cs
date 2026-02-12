@@ -33,7 +33,22 @@ namespace KRPC.MechJeb {
 					if(mechjebTypeField != null) {
 						string mechjebType = (string)mechjebTypeField.GetValue(null);
 						Logger.Debug("Found class " + t.Name + " wanting to use " + mechjebType);
-						mechjebTypes.Add(mechjebType, t);
+						if(!mechjebTypes.ContainsKey(mechjebType))
+							mechjebTypes.Add(mechjebType, t);
+					}
+
+					FieldInfo mechjebTypesField = t.GetField("MechJebTypes", BindingFlags.NonPublic | BindingFlags.Static);
+					if(mechjebTypesField != null) {
+						string[] aliases = (string[])mechjebTypesField.GetValue(null);
+						if(aliases == null)
+							continue;
+						foreach(string alias in aliases) {
+							if(string.IsNullOrEmpty(alias))
+								continue;
+							Logger.Debug("Found class " + t.Name + " wanting to use " + alias);
+							if(!mechjebTypes.ContainsKey(alias))
+								mechjebTypes.Add(alias, t);
+						}
 					}
 				}
 
@@ -143,11 +158,34 @@ namespace KRPC.MechJeb {
 		}
 
 		internal static object GetComputerModule(string moduleType) {
-			object module = getComputerModule.Invoke(MasterInstance, new object[] { "MechJebModule" + moduleType });
-			if(module == null)
-				Logger.Severe("MechJeb module " + moduleType + " not found");
+			string[] moduleTypeCandidates = GetModuleTypeCandidates(moduleType);
+			object module = null;
+			foreach(string candidate in moduleTypeCandidates) {
+				module = getComputerModule.Invoke(MasterInstance, new object[] { "MechJebModule" + candidate });
+				if(module != null)
+					return module;
+			}
+
+			Logger.Severe("MechJeb module " + moduleType + " not found");
 
 			return module;
+		}
+
+		private static string[] GetModuleTypeCandidates(string moduleType) {
+			switch(moduleType) {
+			case "AscentAutopilot":
+				return new[] { "AscentAutopilot", "AscentBaseAutopilot", "Ascent" };
+			case "AscentGuidance":
+				return new[] { "AscentGuidance", "AscentSettings" };
+			case "AscentClassic":
+				return new[] { "AscentClassic", "AscentSettings", "AscentClassicAutopilot" };
+			case "AscentGT":
+				return new[] { "AscentGT", "AscentSettings" };
+			case "AscentPVG":
+				return new[] { "AscentPVG", "AscentSettings", "AscentPVGAutopilot" };
+			default:
+				return new[] { moduleType };
+			}
 		}
 
 		internal static PartModule MasterInstance { get; private set; }

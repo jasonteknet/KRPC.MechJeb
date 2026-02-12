@@ -11,6 +11,10 @@ namespace KRPC.MechJeb {
 	[KRPCClass(Service = "MechJeb")]
 	public class AscentClassic : AscentBase {
 		internal new const string MechJebType = "MuMech.MechJebModuleAscentClassic";
+		internal static readonly string[] MechJebTypes = {
+			MechJebType,
+			"MuMech.MechJebModuleAscentSettings"
+		};
 
 		// Fields and methods
 		private static FieldInfo turnStartAltitudeField;
