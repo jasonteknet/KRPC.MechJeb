@@ -94,6 +94,7 @@ namespace KRPC.MechJeb {
 			modules.Add("SolarPanelController", new DeployableController());
 			modules.Add("TargetController", new TargetController());
 			modules.Add("ThrustController", new ThrustController());
+			modules.Add("WarpController", new WarpController());
 		}
 
 		internal static bool InitInstance() {
@@ -212,6 +213,9 @@ namespace KRPC.MechJeb {
 
 		[KRPCProperty]
 		public static ThrustController ThrustController => (ThrustController)modules["ThrustController"];
+
+		[KRPCProperty]
+		public static WarpController WarpController => (WarpController)modules["WarpController"];
 	}
 
 	/// <summary>

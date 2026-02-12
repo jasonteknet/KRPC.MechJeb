@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-02-12
+### Added
+- `WarpController` with `WarpToUT` helpers for MechJeb warp control
+### Fixed
+- `AscentAutopilot#LaunchToRendezvous` and `AscentAutopilot#LaunchToTargetPlane` now engage the ascent autopilot (set `Enabled = true`) when starting timed launch
+- Flight-scene `MechJeb` instance initialization now retries when the first attempt fails, preventing `APIReady=false` from sticking after vessel switches/loading
+
 ## [0.7.1] - 2024-12-23
 ### Changed
 - Updated for kRPC 0.5.4
@@ -135,7 +142,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **StagingController**
 - **TargetController** to get information about the current target
 
-[Unreleased]: https://github.com/Genhis/KRPC.MechJeb/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/jasonteknet/KRPC.MechJeb/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/jasonteknet/KRPC.MechJeb/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/Genhis/KRPC.MechJeb/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/Genhis/KRPC.MechJeb/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/Genhis/KRPC.MechJeb/compare/v0.6.0...v0.6.1

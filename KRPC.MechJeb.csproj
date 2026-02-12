@@ -113,6 +113,7 @@
     <Compile Include="ThrustController.cs" />
     <Compile Include="Translatron.cs" />
     <Compile Include="VesselState.cs" />
+    <Compile Include="WarpController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

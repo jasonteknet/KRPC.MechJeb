@@ -343,6 +343,71 @@ namespace KRPC.MechJeb {
 		}
 
 		/// <summary>
+		/// Whether launch-to-rendezvous can be started immediately with the current vessel and target state.
+		/// </summary>
+		[KRPCProperty]
+		public bool CanLaunchToRendezvous => this.RendezvousLaunchStatus == AscentTimedLaunchStatus.Ready;
+
+		/// <summary>
+		/// Whether launch-to-target-plane can be started immediately with the current vessel and target state.
+		/// </summary>
+		[KRPCProperty]
+		public bool CanLaunchToTargetPlane => this.TargetPlaneLaunchStatus == AscentTimedLaunchStatus.Ready;
+
+		/// <summary>
+		/// Readiness state for <see cref="LaunchToRendezvous" />.
+		/// </summary>
+		[KRPCProperty]
+		public AscentTimedLaunchStatus RendezvousLaunchStatus => this.GetRendezvousLaunchStatus();
+
+		/// <summary>
+		/// Readiness state for <see cref="LaunchToTargetPlane" />.
+		/// </summary>
+		[KRPCProperty]
+		public AscentTimedLaunchStatus TargetPlaneLaunchStatus => this.GetTargetPlaneLaunchStatus();
+
+		private AscentTimedLaunchStatus GetRendezvousLaunchStatus() {
+			if(this.LaunchMode == AscentLaunchMode.Unknown)
+				return AscentTimedLaunchStatus.UnknownTimedLaunch;
+			if(!MechJeb.TargetController.NormalTargetExists)
+				return AscentTimedLaunchStatus.MissingTarget;
+			if(MechJeb.TargetController.InternalTargetOrbit == null)
+				return AscentTimedLaunchStatus.InvalidTargetOrbit;
+			if(this.AscentPathIndex == 2)
+				return AscentTimedLaunchStatus.UnsupportedAscentPath;
+
+			return AscentTimedLaunchStatus.Ready;
+		}
+
+		private AscentTimedLaunchStatus GetTargetPlaneLaunchStatus() {
+			if(this.LaunchMode == AscentLaunchMode.Unknown)
+				return AscentTimedLaunchStatus.UnknownTimedLaunch;
+			if(!MechJeb.TargetController.NormalTargetExists)
+				return AscentTimedLaunchStatus.MissingTarget;
+			if(MechJeb.TargetController.InternalTargetOrbit == null)
+				return AscentTimedLaunchStatus.InvalidTargetOrbit;
+
+			return AscentTimedLaunchStatus.Ready;
+		}
+
+		private static string GetTimedLaunchStatusError(AscentTimedLaunchStatus status, string action) {
+			switch(status) {
+			case AscentTimedLaunchStatus.Ready:
+				return null;
+			case AscentTimedLaunchStatus.MissingTarget:
+				return string.Format("Cannot {0}: no valid target is selected", action);
+			case AscentTimedLaunchStatus.InvalidTargetOrbit:
+				return string.Format("Cannot {0}: selected target does not have a valid orbit", action);
+			case AscentTimedLaunchStatus.UnsupportedAscentPath:
+				return string.Format("Cannot {0}: this action can't be performed in PVG path mode", action);
+			case AscentTimedLaunchStatus.UnknownTimedLaunch:
+				return string.Format("Cannot {0}: there is an unknown timed launch ongoing", action);
+			default:
+				return string.Format("Cannot {0}: timed launch is not ready", action);
+			}
+		}
+
+		/// <summary>
 		/// Abort a known timed launch when it has not started yet
 		/// </summary>
 		[KRPCMethod]
@@ -364,18 +429,19 @@ namespace KRPC.MechJeb {
 		/// </summary>
 		[KRPCMethod]
 		public void LaunchToRendezvous() {
-			if(!MechJeb.TargetController.NormalTargetExists)
-				throw new InvalidOperationException("Invalid target");
-			if(this.AscentPathIndex == 2)
-				throw new InvalidOperationException("This action can't be performed in PVG path mode");
+			AscentTimedLaunchStatus status = this.GetRendezvousLaunchStatus();
+			if(status != AscentTimedLaunchStatus.Ready)
+				throw new InvalidOperationException(GetTimedLaunchStatusError(status, "start launch-to-rendezvous"));
 
 			this.AbortTimedLaunch();
 			try {
 				AscentGuidance.launchingToRendezvous.SetValue(this.guiInstance, true);
+				this.Enabled = true;
 				this.StartCountdown(LaunchTiming.TimeToPhaseAngle(this.LaunchPhaseAngle));
 			}
 			catch(Exception) {
 				this.AbortTimedLaunch();
+				this.Enabled = false;
 				throw;
 			}
 		}
@@ -385,13 +451,15 @@ namespace KRPC.MechJeb {
 		/// </summary>
 		[KRPCMethod]
 		public void LaunchToTargetPlane() {
-			if(!MechJeb.TargetController.NormalTargetExists)
-				throw new InvalidOperationException("Invalid target");
+			AscentTimedLaunchStatus status = this.GetTargetPlaneLaunchStatus();
+			if(status != AscentTimedLaunchStatus.Ready)
+				throw new InvalidOperationException(GetTimedLaunchStatusError(status, "start launch-to-target-plane"));
 
 			this.AbortTimedLaunch();
 			try {
 				Orbit target = MechJeb.TargetController.InternalTargetOrbit;
 				AscentGuidance.launchingToPlane.SetValue(this.guiInstance, true);
+				this.Enabled = true;
 
 				Tuple<double, double> item = MathFunctions.MinimumTimeToPlane(target.LAN - this.LaunchLANDifference, target.inclination);
 				this.StartCountdown(item.Item1);
@@ -399,6 +467,7 @@ namespace KRPC.MechJeb {
 			}
 			catch(Exception) {
 				this.AbortTimedLaunch();
+				this.Enabled = false;
 				throw;
 			}
 		}
@@ -424,6 +493,37 @@ namespace KRPC.MechJeb {
 			/// The autopilot is performing an unknown timed launch.
 			/// </summary>
 			Unknown = 99
+		}
+
+		/// <summary>
+		/// Readiness state for timed-launch operations.
+		/// </summary>
+		[KRPCEnum(Service = "MechJeb")]
+		public enum AscentTimedLaunchStatus {
+			/// <summary>
+			/// Timed launch can be started.
+			/// </summary>
+			Ready,
+
+			/// <summary>
+			/// No normal target is selected.
+			/// </summary>
+			MissingTarget,
+
+			/// <summary>
+			/// The selected target does not expose a valid orbit.
+			/// </summary>
+			InvalidTargetOrbit,
+
+			/// <summary>
+			/// The currently selected ascent path does not support this launch mode.
+			/// </summary>
+			UnsupportedAscentPath,
+
+			/// <summary>
+			/// A timed launch is active but its mode cannot be identified.
+			/// </summary>
+			UnknownTimedLaunch = 99
 		}
 	}
 
