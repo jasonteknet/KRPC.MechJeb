@@ -198,6 +198,7 @@ MechJeb.NodeExecutor.ExecuteAllNodes
 MechJeb.NodeExecutor.ExecuteOneNode
 MechJeb.NodeExecutor.LeadTime
 MechJeb.NodeExecutor.Tolerance
+MechJeb.NodeExecutor.ToleranceAvailable
 
 MechJeb.OperationApoapsis.ErrorMessage
 MechJeb.OperationApoapsis.MakeNode
@@ -289,8 +290,10 @@ MechJeb.OperationSemiMajor.TimeSelector
 MechJeb.OperationTransfer.ErrorMessage
 MechJeb.OperationTransfer.MakeNode
 MechJeb.OperationTransfer.MakeNodes
+MechJeb.OperationTransfer.InterceptOnlyAvailable
 MechJeb.OperationTransfer.InterceptOnly
 MechJeb.OperationTransfer.PeriodOffset
+MechJeb.OperationTransfer.SimpleTransferAvailable
 MechJeb.OperationTransfer.SimpleTransfer
 MechJeb.OperationTransfer.TimeSelector
 
