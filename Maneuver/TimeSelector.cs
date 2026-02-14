@@ -5,6 +5,9 @@ using KRPC.MechJeb.ExtensionMethods;
 using KRPC.Service.Attributes;
 
 namespace KRPC.MechJeb.Maneuver {
+	using TimeRefReason = Tuple<bool, TimeReference, string>;
+	using BoolReason = Tuple<bool, string>;
+
 	[KRPCEnum(Service = "MechJeb")]
 	public enum TimeReference {
 		/// <summary>
@@ -111,9 +114,44 @@ namespace KRPC.MechJeb.Maneuver {
 		}
 
 		[KRPCProperty]
+		public bool TimeReferenceAvailable => this.allowedTimeRef != null && currentTimeRef != null;
+
+		[KRPCMethod]
+		public TimeRefReason TryGetTimeReference() {
+			if(!this.TimeReferenceAvailable)
+				return Tuple.Create(false, TimeReference.Computed, "Time selector references are unavailable for this MechJeb build.");
+
+			try {
+				return Tuple.Create(true, (TimeReference)this.allowedTimeRef[(int)currentTimeRef.GetValue(this.instance)], "");
+			}
+			catch(Exception ex) {
+				return Tuple.Create(false, TimeReference.Computed, ex.Message);
+			}
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetTimeReference(TimeReference value) {
+			if(!this.TimeReferenceAvailable)
+				return Tuple.Create(false, "Time selector references are unavailable for this MechJeb build.");
+
+			try {
+				currentTimeRef.SetValue(this.instance, this.GetTimeRefIndex(value));
+				return Tuple.Create(true, "");
+			}
+			catch(Exception ex) {
+				return Tuple.Create(false, ex.Message);
+			}
+		}
+
+		[KRPCProperty]
 		public TimeReference TimeReference {
-			get => (TimeReference)this.allowedTimeRef[(int)currentTimeRef.GetValue(this.instance)];
-			set => currentTimeRef.SetValue(this.instance, this.GetTimeRefIndex(value));
+			get {
+				TimeRefReason value = this.TryGetTimeReference();
+				return value.Item2;
+			}
+			set {
+				this.TrySetTimeReference(value);
+			}
 		}
 
 		private int GetTimeRefIndex(TimeReference timeRef) {
@@ -128,8 +166,16 @@ namespace KRPC.MechJeb.Maneuver {
 		/// </summary>
 		[KRPCProperty]
 		public double LeadTime {
-			get => EditableDouble.Get(this.leadTime);
-			set => EditableDouble.Set(this.leadTime, value);
+			get {
+				if(this.leadTime == null)
+					throw new MJServiceException("Time selector lead time is unavailable for this MechJeb build.");
+				return EditableDouble.Get(this.leadTime);
+			}
+			set {
+				if(this.leadTime == null)
+					throw new MJServiceException("Time selector lead time is unavailable for this MechJeb build.");
+				EditableDouble.Set(this.leadTime, value);
+			}
 		}
 
 		/// <summary>
@@ -137,8 +183,16 @@ namespace KRPC.MechJeb.Maneuver {
 		/// </summary>
 		[KRPCProperty]
 		public double CircularizeAltitude {
-			get => EditableDouble.Get(this.circularizeAltitude);
-			set => EditableDouble.Set(this.circularizeAltitude, value);
+			get {
+				if(this.circularizeAltitude == null)
+					throw new MJServiceException("Time selector circularize altitude is unavailable for this MechJeb build.");
+				return EditableDouble.Get(this.circularizeAltitude);
+			}
+			set {
+				if(this.circularizeAltitude == null)
+					throw new MJServiceException("Time selector circularize altitude is unavailable for this MechJeb build.");
+				EditableDouble.Set(this.circularizeAltitude, value);
+			}
 		}
 	}
 }

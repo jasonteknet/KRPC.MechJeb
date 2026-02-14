@@ -38,11 +38,26 @@ namespace KRPC.MechJeb {
 		}
 
 		internal static void InitType(Type type) {
-			operationsField = type.GetCheckedField("operation", BindingFlags.NonPublic | BindingFlags.Instance);
+			const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+			operationsField = type.GetCheckedField("operation", flags)
+				?? type.GetCheckedField("_operation", flags)
+				?? type.GetCheckedField("_operations", flags);
 		}
 
 		protected internal override void InitInstance(object instance) {
-			Dictionary<string, object> operations = instance != null ? ((object[])operationsField.GetValue(instance)).ToDictionary(el => el.GetType().FullName, el => el) : new Dictionary<string, object>();
+			Dictionary<string, object> operations = new Dictionary<string, object>();
+			if(instance != null && operationsField != null) {
+				object value = operationsField.GetValue(operationsField.IsStatic ? null : instance);
+				if(value is Array array) {
+					foreach(object el in array) {
+						if(el == null)
+							continue;
+						string fullName = el.GetType().FullName;
+						if(!string.IsNullOrEmpty(fullName) && !operations.ContainsKey(fullName))
+							operations.Add(fullName, el);
+					}
+				}
+			}
 
 			foreach(KeyValuePair<string, Operation> p in this.operations) {
 				string operationType = "MuMech." + p.Key;

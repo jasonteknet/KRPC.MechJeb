@@ -375,6 +375,7 @@ MechJeb.SmartRCSMode.ZeroVelocity
 MechJeb.StagingController.Enabled
 MechJeb.StagingController.AutostagingOnce
 MechJeb.StagingController.AutostageLimit
+MechJeb.StagingController.AutostageLimitAvailable
 MechJeb.StagingController.AutostagePostDelay
 MechJeb.StagingController.AutostagePreDelay
 MechJeb.StagingController.ClampAutoStageThrustPct
@@ -393,6 +394,7 @@ MechJeb.TargetController.NormalTargetExists
 MechJeb.TargetController.PickPositionTargetOnMap
 MechJeb.TargetController.Position
 MechJeb.TargetController.PositionTargetExists
+MechJeb.TargetController.CanAlignAvailable
 MechJeb.TargetController.RelativePosition
 MechJeb.TargetController.RelativeVelocity
 MechJeb.TargetController.SetDirectionTarget
@@ -417,6 +419,9 @@ MechJeb.TimeReference.XFromNow
 
 MechJeb.TimeSelector.CircularizeAltitude
 MechJeb.TimeSelector.LeadTime
+MechJeb.TimeSelector.TimeReferenceAvailable
+MechJeb.TimeSelector.TryGetTimeReference
+MechJeb.TimeSelector.TrySetTimeReference
 MechJeb.TimeSelector.TimeReference
 
 MechJeb.ThrustController.DifferentialThrottle

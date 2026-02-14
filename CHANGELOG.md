@@ -5,6 +5,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-02-14
+### Added
+- `StagingController.AutostageLimitAvailable`
+- `TargetController.CanAlignAvailable`
+- `TimeSelector.TimeReferenceAvailable`
+- `TimeSelector.TryGetTimeReference()`
+- `TimeSelector.TrySetTimeReference(TimeReference)`
+
+### Changed
+- `ManeuverPlanner` operation field discovery now supports additional backing field names (`operation`, `_operation`, `_operations`)
+- Maneuver operations now prefer `MakeNodes()` and fall back to `MakeNodesImpl()` for older builds
+
+### Fixed
+- `Operation.ErrorMessage` now safely returns an empty string when the underlying method is unavailable
+- `Operation.MakeNode()` now throws a clear error when no nodes are produced instead of indexing an empty list
+- `Operation.MakeNodes()` now throws explicit errors when operation methods are unavailable or return null parameters
+- `StagingController.AutostageLimit` and `TargetController.CanAlign` now degrade safely when unavailable in the current MechJeb/runtime context
+- `TimeSelector.LeadTime` and `TimeSelector.CircularizeAltitude` now throw explicit availability errors instead of null-reference failures
+
 ## [0.8.2] - 2026-02-14
 ### Fixed
 - Ascent reflection mapping now prefers the best available alias per wrapper type, preventing partial initialization when multiple legacy/new MechJeb type names are present

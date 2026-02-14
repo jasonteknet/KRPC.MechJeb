@@ -86,9 +86,32 @@ namespace KRPC.MechJeb {
 		/// </summary>
 		[KRPCProperty]
 		public int AutostageLimit {
-			get => EditableInt.Get(this.autostageLimit);
-			set => EditableInt.Set(this.autostageLimit, value);
+			get {
+				if(!this.AutostageLimitAvailable)
+					return 0;
+
+				try {
+					return EditableInt.Get(this.autostageLimit);
+				}
+				catch(Exception) {
+					return 0;
+				}
+			}
+			set {
+				if(!this.AutostageLimitAvailable)
+					return;
+
+				try {
+					EditableInt.Set(this.autostageLimit, value);
+				}
+				catch(Exception ex) {
+					Logger.Warning("StagingController.AutostageLimit is unavailable in current context. Ignoring requested value.", ex);
+				}
+			}
 		}
+
+		[KRPCProperty]
+		public bool AutostageLimitAvailable => this.autostageLimit != null;
 
 		[KRPCProperty]
 		public double FairingMaxDynamicPressure {
