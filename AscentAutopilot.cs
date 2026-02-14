@@ -6,6 +6,10 @@ using KRPC.MechJeb.Util;
 using KRPC.Service.Attributes;
 
 namespace KRPC.MechJeb {
+	using BoolReason = Tuple<bool, string>;
+	using BoolValueReason = Tuple<bool, bool, string>;
+	using DoubleValueReason = Tuple<bool, double, string>;
+
 	internal static class AscentGuidance {
 		internal new const string MechJebType = "MuMech.MechJebModuleAscentGuidance";
 		internal static readonly string[] MechJebTypes = {
@@ -195,6 +199,225 @@ namespace KRPC.MechJeb {
 		public double DesiredOrbitAltitude {
 			get => EditableDouble.Get(this.desiredOrbitAltitude);
 			set => EditableDouble.Set(this.desiredOrbitAltitude, value);
+		}
+
+		private static string NormalizePropertyName(string propertyName) {
+			if(propertyName == null)
+				return "";
+			return propertyName.Replace("_", "").Replace("-", "").Trim().ToLowerInvariant();
+		}
+
+		private static string BuildUnavailableReason(string propertyName, string detail) {
+			return propertyName + " is unavailable for this MechJeb build. " + detail;
+		}
+
+		private bool TryGetBoolField(FieldInfo field, string propertyName, out bool value, out string reason) {
+			value = false;
+			if(field == null) {
+				reason = BuildUnavailableReason(propertyName, "Field was not found.");
+				return false;
+			}
+			if(this.instance == null) {
+				reason = BuildUnavailableReason(propertyName, "Ascent autopilot instance is not initialized.");
+				return false;
+			}
+
+			try {
+				value = (bool)field.GetValue(this.instance);
+				reason = null;
+				return true;
+			}
+			catch(Exception ex) {
+				reason = BuildUnavailableReason(propertyName, ex.Message);
+				return false;
+			}
+		}
+
+		private bool TrySetBoolField(FieldInfo field, string propertyName, bool value, out string reason) {
+			if(field == null) {
+				reason = BuildUnavailableReason(propertyName, "Field was not found.");
+				return false;
+			}
+			if(this.instance == null) {
+				reason = BuildUnavailableReason(propertyName, "Ascent autopilot instance is not initialized.");
+				return false;
+			}
+
+			try {
+				field.SetValue(this.instance, value);
+				reason = null;
+				return true;
+			}
+			catch(Exception ex) {
+				reason = BuildUnavailableReason(propertyName, ex.Message);
+				return false;
+			}
+		}
+
+		private bool TryGetEditableDouble(object editable, string propertyName, out double value, out string reason) {
+			value = 0.0;
+			if(editable == null) {
+				reason = BuildUnavailableReason(propertyName, "Editable value wrapper is not initialized.");
+				return false;
+			}
+
+			try {
+				value = EditableDouble.Get(editable);
+				reason = null;
+				return true;
+			}
+			catch(Exception ex) {
+				reason = BuildUnavailableReason(propertyName, ex.Message);
+				return false;
+			}
+		}
+
+		private bool TrySetEditableDouble(object editable, string propertyName, double value, out string reason) {
+			if(editable == null) {
+				reason = BuildUnavailableReason(propertyName, "Editable value wrapper is not initialized.");
+				return false;
+			}
+
+			try {
+				EditableDouble.Set(editable, value);
+				reason = null;
+				return true;
+			}
+			catch(Exception ex) {
+				reason = BuildUnavailableReason(propertyName, ex.Message);
+				return false;
+			}
+		}
+
+		private bool TryGetPropertyAvailability(string propertyName, out string reason) {
+			reason = null;
+			switch(NormalizePropertyName(propertyName)) {
+			case "desiredorbitaltitude":
+				double desiredOrbitAltitudeValue;
+				return this.TryGetEditableDouble(this.desiredOrbitAltitude, "DesiredOrbitAltitude", out desiredOrbitAltitudeValue, out reason);
+			case "limitaoa":
+				bool limitAoAValue;
+				return this.TryGetBoolField(limitAoA, "LimitAoA", out limitAoAValue, out reason);
+			case "maxaoa":
+				double maxAoAValue;
+				return this.TryGetEditableDouble(this.maxAoA, "MaxAoA", out maxAoAValue, out reason);
+			case "correctivesteering":
+				bool correctiveSteeringValue;
+				return this.TryGetBoolField(correctiveSteering, "CorrectiveSteering", out correctiveSteeringValue, out reason);
+			case "correctivesteeringgain":
+				double correctiveSteeringGainValue;
+				return this.TryGetEditableDouble(this.correctiveSteeringGain, "CorrectiveSteeringGain", out correctiveSteeringGainValue, out reason);
+			case "forceroll":
+				bool forceRollValue;
+				return this.TryGetBoolField(forceRoll, "ForceRoll", out forceRollValue, out reason);
+			case "skipcircularization":
+				bool skipCircularizationValue;
+				return this.TryGetBoolField(skipCircularization, "SkipCircularization", out skipCircularizationValue, out reason);
+			default:
+				reason = BuildUnavailableReason(propertyName, "Unknown property name.");
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Checks whether an ascent property is currently available in this runtime/build combination.
+		/// </summary>
+		[KRPCMethod]
+		public bool IsPropertyAvailable(string propertyName) {
+			string reason;
+			return this.TryGetPropertyAvailability(propertyName, out reason);
+		}
+
+		/// <summary>
+		/// Returns an unavailability reason for a requested ascent property, or empty string if it is available.
+		/// </summary>
+		[KRPCMethod]
+		public string GetUnavailableReason(string propertyName) {
+			string reason;
+			bool available = this.TryGetPropertyAvailability(propertyName, out reason);
+			return available ? "" : reason;
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetDesiredOrbitAltitude(double altitude) {
+			string reason;
+			return Tuple.Create(this.TrySetEditableDouble(this.desiredOrbitAltitude, "DesiredOrbitAltitude", altitude, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetLimitAoA(bool enabled) {
+			string reason;
+			return Tuple.Create(this.TrySetBoolField(limitAoA, "LimitAoA", enabled, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolValueReason TryGetLimitAoA() {
+			bool value;
+			string reason;
+			bool success = this.TryGetBoolField(limitAoA, "LimitAoA", out value, out reason);
+			return Tuple.Create(success, value, reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetMaxAoA(double degrees) {
+			string reason;
+			return Tuple.Create(this.TrySetEditableDouble(this.maxAoA, "MaxAoA", degrees, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public DoubleValueReason TryGetMaxAoA() {
+			double value;
+			string reason;
+			bool success = this.TryGetEditableDouble(this.maxAoA, "MaxAoA", out value, out reason);
+			return Tuple.Create(success, value, reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetCorrectiveSteering(bool enabled) {
+			string reason;
+			return Tuple.Create(this.TrySetBoolField(correctiveSteering, "CorrectiveSteering", enabled, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolValueReason TryGetCorrectiveSteering() {
+			bool value;
+			string reason;
+			bool success = this.TryGetBoolField(correctiveSteering, "CorrectiveSteering", out value, out reason);
+			return Tuple.Create(success, value, reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetCorrectiveSteeringGain(double gain) {
+			string reason;
+			return Tuple.Create(this.TrySetEditableDouble(this.correctiveSteeringGain, "CorrectiveSteeringGain", gain, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public DoubleValueReason TryGetCorrectiveSteeringGain() {
+			double value;
+			string reason;
+			bool success = this.TryGetEditableDouble(this.correctiveSteeringGain, "CorrectiveSteeringGain", out value, out reason);
+			return Tuple.Create(success, value, reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetForceRoll(bool enabled) {
+			string reason;
+			return Tuple.Create(this.TrySetBoolField(forceRoll, "ForceRoll", enabled, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolReason TrySetSkipCircularization(bool enabled) {
+			string reason;
+			return Tuple.Create(this.TrySetBoolField(skipCircularization, "SkipCircularization", enabled, out reason), reason ?? "");
+		}
+
+		[KRPCMethod]
+		public BoolValueReason TryGetSkipCircularization() {
+			bool value;
+			string reason;
+			bool success = this.TryGetBoolField(skipCircularization, "SkipCircularization", out value, out reason);
+			return Tuple.Create(success, value, reason ?? "");
 		}
 
 		/// <summary>
