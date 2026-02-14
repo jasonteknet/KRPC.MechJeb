@@ -13,7 +13,8 @@ namespace KRPC.MechJeb {
 		internal new const string MechJebType = "MuMech.MechJebModuleAscentClassic";
 		internal static readonly string[] MechJebTypes = {
 			MechJebType,
-			"MuMech.MechJebModuleAscentSettings"
+			"MuMech.MechJebModuleAscentSettings",
+			"MuMech.MechJebModuleAscentClassicAutopilot"
 		};
 
 		// Fields and methods

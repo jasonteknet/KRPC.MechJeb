@@ -16,8 +16,7 @@ namespace KRPC.MechJeb {
 	public class AscentGT : AscentBase {
 		internal new const string MechJebType = "MuMech.MechJebModuleAscentGT";
 		internal static readonly string[] MechJebTypes = {
-			MechJebType,
-			"MuMech.MechJebModuleAscentSettings"
+			MechJebType
 		};
 
 		// Fields and methods

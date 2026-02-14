@@ -8,8 +8,7 @@ namespace KRPC.MechJeb.Util {
 	internal static class LaunchTiming {
 		internal const string MechJebType = "MuMech.LaunchTiming";
 		internal static readonly string[] MechJebTypes = {
-			MechJebType,
-			"MuMech.MechJebModuleAscentSettings"
+			MechJebType
 		};
 
 		// Fields and methods
@@ -43,8 +42,7 @@ namespace KRPC.MechJeb.Util {
 	internal static class MathFunctions {
 		internal const string MechJebType = "MechJebLib.Maths.Functions";
 		internal static readonly string[] MechJebTypes = {
-			MechJebType,
-			"MuMech.MechJebModuleAscentSettings"
+			MechJebType
 		};
 
 		// Fields and methods

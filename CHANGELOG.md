@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-02-14
+### Fixed
+- Ascent reflection mapping now prefers the best available alias per wrapper type, preventing partial initialization when multiple legacy/new MechJeb type names are present
+- `AscentAutopilot`, `AscentClassic`, and `AscentPVG` now include `MuMech.MechJebModuleAscentSettings` compatibility aliases while still supporting older autopilot class names
+- Ascent module resolution now falls back to `MechJebModuleAscentSettings` when `MechJebModuleAscentAutopilot` is unavailable
+
 ## [0.8.1] - 2026-02-14
 ### Fixed
 - `NodeExecutor.Tolerance` no longer throws on MechJeb builds where tolerance is unavailable; setter safely no-ops and `ToleranceAvailable` exposes capability
