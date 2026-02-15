@@ -35,7 +35,7 @@ namespace KRPC.MechJeb.Maneuver {
 
 		internal static void InitType(Type type) {
 			errorMessage = type.GetCheckedMethod("getErrorMessage");
-			makeNodesImpl = type.GetCheckedMethod("MakeNodesImpl");
+			makeNodesImpl = type.GetCheckedMethod("MakeNodes") ?? type.GetCheckedMethod("MakeNodesImpl");
 		}
 
 		protected internal virtual void InitInstance(object instance) {
@@ -46,7 +46,7 @@ namespace KRPC.MechJeb.Maneuver {
 		/// A warning may be stored there during MakeNode() call.
 		/// </summary>
 		[KRPCProperty]
-		public string ErrorMessage => (string)errorMessage.Invoke(this.instance, null);
+		public string ErrorMessage => errorMessage != null ? (string)errorMessage.Invoke(this.instance, null) : string.Empty;
 
 		/// <summary>
 		/// Execute the operation and create appropriate maneuver nodes.
@@ -59,7 +59,10 @@ namespace KRPC.MechJeb.Maneuver {
 		/// <remarks>This method is deprecated, use MakeNodes instead.</remarks>
 		[KRPCMethod, Obsolete("Replaced with MakeNodes")]
 		public Node MakeNode() {
-			return this.MakeNodes()[0];
+			List<Node> nodes = this.MakeNodes();
+			if(nodes.Count == 0)
+				throw new OperationException("Operation produced no maneuver nodes.");
+			return nodes[0];
 		}
 
 		/// <summary>
@@ -77,8 +80,17 @@ namespace KRPC.MechJeb.Maneuver {
 				// We need to call TargetController.OnFixedUpdate() to force the target update.
 				MechJeb.TargetController.OnFixedUpdate();
 
+				if(makeNodesImpl == null)
+					throw new OperationException("Operation method MakeNodes/MakeNodesImpl is unavailable for this MechJeb build.");
+
 				Vessel vessel = FlightGlobals.ActiveVessel;
 				IEnumerable<object> parameters = (IEnumerable<object>)makeNodesImpl.Invoke(this.instance, new object[] { vessel.orbit, Planetarium.GetUniversalTime(), MechJeb.TargetController.instance });
+				if(parameters == null) {
+					string message = this.ErrorMessage;
+					if(string.IsNullOrWhiteSpace(message))
+						message = "Operation returned no maneuver parameters.";
+					throw new OperationException(message);
+				}
 				// A warning may be stored in ErrorMessage property (if it's an error, we will throw an exception)
 
 				//vessel.RemoveAllManeuverNodes(); // This implementation supports only one active ManeuverOperation; removing the other maneuver nodess to prevent bugs

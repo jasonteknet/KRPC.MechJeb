@@ -73,6 +73,20 @@ MechJeb.AscentAutopilot.WarpCountDown
 MechJeb.AscentAutopilot.LaunchLANDifference
 MechJeb.AscentAutopilot.LaunchPhaseAngle
 MechJeb.AscentAutopilot.LaunchMode
+MechJeb.AscentAutopilot.IsPropertyAvailable
+MechJeb.AscentAutopilot.GetUnavailableReason
+MechJeb.AscentAutopilot.TrySetDesiredOrbitAltitude
+MechJeb.AscentAutopilot.TrySetLimitAoA
+MechJeb.AscentAutopilot.TryGetLimitAoA
+MechJeb.AscentAutopilot.TrySetMaxAoA
+MechJeb.AscentAutopilot.TryGetMaxAoA
+MechJeb.AscentAutopilot.TrySetCorrectiveSteering
+MechJeb.AscentAutopilot.TryGetCorrectiveSteering
+MechJeb.AscentAutopilot.TrySetCorrectiveSteeringGain
+MechJeb.AscentAutopilot.TryGetCorrectiveSteeringGain
+MechJeb.AscentAutopilot.TrySetForceRoll
+MechJeb.AscentAutopilot.TrySetSkipCircularization
+MechJeb.AscentAutopilot.TryGetSkipCircularization
 MechJeb.AscentAutopilot.CanLaunchToRendezvous
 MechJeb.AscentAutopilot.CanLaunchToTargetPlane
 MechJeb.AscentAutopilot.RendezvousLaunchStatus
@@ -198,6 +212,7 @@ MechJeb.NodeExecutor.ExecuteAllNodes
 MechJeb.NodeExecutor.ExecuteOneNode
 MechJeb.NodeExecutor.LeadTime
 MechJeb.NodeExecutor.Tolerance
+MechJeb.NodeExecutor.ToleranceAvailable
 
 MechJeb.OperationApoapsis.ErrorMessage
 MechJeb.OperationApoapsis.MakeNode
@@ -289,8 +304,10 @@ MechJeb.OperationSemiMajor.TimeSelector
 MechJeb.OperationTransfer.ErrorMessage
 MechJeb.OperationTransfer.MakeNode
 MechJeb.OperationTransfer.MakeNodes
+MechJeb.OperationTransfer.InterceptOnlyAvailable
 MechJeb.OperationTransfer.InterceptOnly
 MechJeb.OperationTransfer.PeriodOffset
+MechJeb.OperationTransfer.SimpleTransferAvailable
 MechJeb.OperationTransfer.SimpleTransfer
 MechJeb.OperationTransfer.TimeSelector
 
@@ -358,6 +375,7 @@ MechJeb.SmartRCSMode.ZeroVelocity
 MechJeb.StagingController.Enabled
 MechJeb.StagingController.AutostagingOnce
 MechJeb.StagingController.AutostageLimit
+MechJeb.StagingController.AutostageLimitAvailable
 MechJeb.StagingController.AutostagePostDelay
 MechJeb.StagingController.AutostagePreDelay
 MechJeb.StagingController.ClampAutoStageThrustPct
@@ -376,6 +394,7 @@ MechJeb.TargetController.NormalTargetExists
 MechJeb.TargetController.PickPositionTargetOnMap
 MechJeb.TargetController.Position
 MechJeb.TargetController.PositionTargetExists
+MechJeb.TargetController.CanAlignAvailable
 MechJeb.TargetController.RelativePosition
 MechJeb.TargetController.RelativeVelocity
 MechJeb.TargetController.SetDirectionTarget
@@ -400,6 +419,9 @@ MechJeb.TimeReference.XFromNow
 
 MechJeb.TimeSelector.CircularizeAltitude
 MechJeb.TimeSelector.LeadTime
+MechJeb.TimeSelector.TimeReferenceAvailable
+MechJeb.TimeSelector.TryGetTimeReference
+MechJeb.TimeSelector.TrySetTimeReference
 MechJeb.TimeSelector.TimeReference
 
 MechJeb.ThrustController.DifferentialThrottle

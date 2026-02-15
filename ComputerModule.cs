@@ -22,7 +22,7 @@ namespace KRPC.MechJeb {
 		// Instance objects
 		protected internal object instance;
 
-		private object users;
+		protected object users;
 
 		internal static void InitType(Type type) {
 			onFixedUpdate = type.GetCheckedMethod("OnFixedUpdate");
@@ -40,11 +40,16 @@ namespace KRPC.MechJeb {
 		public virtual bool Enabled {
 			get => (bool)enabled.GetValue(this.instance, null);
 			set {
-				if(value)
-					UserPool.usersAdd.Invoke(this.users, new object[] { this });
-				else
-					UserPool.usersRemove.Invoke(this.users, new object[] { this });
+				this.SetEnabledWithUser(this.instance, value);
 			}
+		}
+
+		protected void SetEnabledWithUser(object user, bool enabledState) {
+			object resolvedUser = user ?? this.instance;
+			if(enabledState)
+				UserPool.usersAdd.Invoke(this.users, new object[] { resolvedUser });
+			else
+				UserPool.usersRemove.Invoke(this.users, new object[] { resolvedUser });
 		}
 
 		internal void OnFixedUpdate() {

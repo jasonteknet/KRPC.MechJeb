@@ -92,7 +92,23 @@ namespace KRPC.MechJeb {
 		public bool PositionTargetExists => (bool)positionTargetExists.GetValue(this.instance, null);
 
 		[KRPCProperty]
-		public bool CanAlign => (bool)canAlign.GetValue(this.instance, null);
+		public bool CanAlign {
+			get {
+				if(!this.CanAlignAvailable)
+					return false;
+
+				try {
+					return (bool)canAlign.GetValue(this.instance, null);
+				}
+				catch(Exception ex) {
+					Logger.Warning("TargetController.CanAlign is unavailable in current context. Returning false.", ex);
+					return false;
+				}
+			}
+		}
+
+		[KRPCProperty]
+		public bool CanAlignAvailable => canAlign != null;
 
 		internal Orbit InternalTargetOrbit => (Orbit)targetOrbit.GetValue(this.instance, null);
 

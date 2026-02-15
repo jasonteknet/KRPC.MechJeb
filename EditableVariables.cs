@@ -15,10 +15,14 @@ namespace KRPC.MechJeb {
 		}
 
 		public static double Get(object instance) {
+			if(instance == null)
+				throw new MJServiceException("EditableDouble value is unavailable for this MechJeb build.");
 			return (double)value.GetValue(instance, null);
 		}
 
 		public static void Set(object instance, double value) {
+			if(instance == null)
+				throw new MJServiceException("EditableDouble value is unavailable for this MechJeb build.");
 			EditableDouble.value.SetValue(instance, value, null);
 		}
 
@@ -45,10 +49,14 @@ namespace KRPC.MechJeb {
 		}
 
 		public static int Get(object instance) {
+			if(instance == null)
+				throw new MJServiceException("EditableInt value is unavailable for this MechJeb build.");
 			return (int)value.GetValue(instance);
 		}
 
 		public static void Set(object instance, int value) {
+			if(instance == null)
+				throw new MJServiceException("EditableInt value is unavailable for this MechJeb build.");
 			EditableInt.value.SetValue(instance, value);
 			text.SetValue(instance, value.ToString());
 		}
@@ -65,6 +73,8 @@ namespace KRPC.MechJeb {
 		}
 
 		public static double Get(object instance) {
+			if(instance == null)
+				throw new MJServiceException("MovingAverage value is unavailable for this MechJeb build.");
 			return (double)value.GetValue(instance, null);
 		}
 	}

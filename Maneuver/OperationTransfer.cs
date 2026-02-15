@@ -38,13 +38,64 @@ namespace KRPC.MechJeb.Maneuver {
 			this.InitTimeSelector(timeSelector);
 		}
 
+		private bool IsTransferOptionAvailable(FieldInfo option) {
+			if(option == null || this.instance == null)
+				return false;
+
+			try {
+				option.GetValue(this.instance);
+				return true;
+			}
+			catch(NullReferenceException) {
+				return false;
+			}
+			catch(TargetInvocationException ex) when(ex.InnerException is NullReferenceException) {
+				return false;
+			}
+		}
+
+		private bool GetTransferOption(FieldInfo option) {
+			if(!this.IsTransferOptionAvailable(option))
+				return false;
+
+			try {
+				return (bool)option.GetValue(this.instance);
+			}
+			catch(NullReferenceException) {
+				return false;
+			}
+			catch(TargetInvocationException ex) when(ex.InnerException is NullReferenceException) {
+				return false;
+			}
+		}
+
+		private void SetTransferOption(FieldInfo option, string optionName, bool value) {
+			if(!this.IsTransferOptionAvailable(option)) {
+				Logger.Warning("OperationTransfer." + optionName + " is unavailable in current transfer context. Ignoring requested value.");
+				return;
+			}
+
+			try {
+				option.SetValue(this.instance, value);
+			}
+			catch(NullReferenceException) {
+				Logger.Warning("OperationTransfer." + optionName + " setter was unavailable in current transfer context. Ignoring requested value.");
+			}
+			catch(TargetInvocationException ex) when(ex.InnerException is NullReferenceException) {
+				Logger.Warning("OperationTransfer." + optionName + " setter was unavailable in current transfer context. Ignoring requested value.");
+			}
+		}
+
+		[KRPCProperty]
+		public bool InterceptOnlyAvailable => this.IsTransferOptionAvailable(interceptOnly);
+
 		/// <summary>
 		/// Intercept only, no capture burn (impact/flyby)
 		/// </summary>
 		[KRPCProperty]
 		public bool InterceptOnly {
-			get => (bool)interceptOnly.GetValue(this.instance);
-			set => interceptOnly.SetValue(this.instance, value);
+			get => this.GetTransferOption(interceptOnly);
+			set => this.SetTransferOption(interceptOnly, "InterceptOnly", value);
 		}
 
 		/// <summary>
@@ -62,9 +113,17 @@ namespace KRPC.MechJeb.Maneuver {
 		/// </summary>
 		/// <remarks>If set to true, TimeSelector property is ignored.</remarks>
 		[KRPCProperty]
+		public bool SimpleTransferAvailable => this.IsTransferOptionAvailable(simpleTransfer);
+
+		/// <summary>
+		/// Simple coplanar Hohmann transfer.
+		/// Set it to true if you are used to the old version of transfer maneuver.
+		/// </summary>
+		/// <remarks>If set to true, TimeSelector property is ignored.</remarks>
+		[KRPCProperty]
 		public bool SimpleTransfer {
-			get => (bool)simpleTransfer.GetValue(this.instance);
-			set => simpleTransfer.SetValue(this.instance, value);
+			get => this.GetTransferOption(simpleTransfer);
+			set => this.SetTransferOption(simpleTransfer, "SimpleTransfer", value);
 		}
 	}
 }
