@@ -70,6 +70,7 @@
     <Compile Include="ExtensionMethods\VesselExtensions.cs" />
     <Compile Include="Maneuver\Operation.cs" />
     <Compile Include="Maneuver\OperationApoapsis.cs" />
+    <Compile Include="Maneuver\OperationAdvancedTransfer.cs" />
     <Compile Include="Maneuver\OperationCircularize.cs" />
     <Compile Include="Maneuver\OperationCourseCorrection.cs" />
     <Compile Include="Maneuver\OperationEllipticize.cs" />

@@ -20,6 +20,7 @@ namespace KRPC.MechJeb {
 
 		public ManeuverPlanner() {
 			this.operations.Add("OperationApoapsis", new OperationApoapsis());
+			this.operations.Add("OperationAdvancedTransfer", new OperationAdvancedTransfer());
 			this.operations.Add("OperationCircularize", new OperationCircularize());
 			this.operations.Add("OperationCourseCorrection", new OperationCourseCorrection());
 			this.operations.Add("OperationEllipticize", new OperationEllipticize());
@@ -73,10 +74,11 @@ namespace KRPC.MechJeb {
 			}
 		}
 
-		//TODO: OperationAdvancedTransfer
-
 		[KRPCProperty]
 		public OperationApoapsis OperationApoapsis => (OperationApoapsis)this.operations["OperationApoapsis"];
+
+		[KRPCProperty]
+		public OperationAdvancedTransfer OperationAdvancedTransfer => (OperationAdvancedTransfer)this.operations["OperationAdvancedTransfer"];
 
 		[KRPCProperty]
 		public OperationCircularize OperationCircularize => (OperationCircularize)this.operations["OperationCircularize"];
