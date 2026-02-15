@@ -21,6 +21,10 @@ namespace KRPC.MechJeb {
 			"LaunchTiming",
 			"MathFunctions"
 		};
+		private static readonly HashSet<string> optionalModuleKeys = new HashSet<string> {
+			"AscentGT",
+			"AscentPVG"
+		};
 
 		private static Type type;
 		private static FieldInfo vesselStateField;
@@ -160,11 +164,14 @@ namespace KRPC.MechJeb {
 				foreach(KeyValuePair<string, Module> p in modules) {
 					string error = "Cannot initialize class " + p.Value.GetType().Name + " with " + p.Key;
 					try {
-						object moduleInstance = GetComputerModule(p.Key);
+						bool optionalModule = optionalModuleKeys.Contains(p.Key);
+						object moduleInstance = GetComputerModule(p.Key, !optionalModule);
 						if(moduleInstance != null)
 							p.Value.InitInstance(moduleInstance);
-						else
+						else if(!optionalModule)
 							errors.Add(error);
+						else
+							Logger.Debug("Optional MechJeb module " + p.Key + " is unavailable in this build.");
 					}
 					catch(Exception ex) {
 						Logger.Severe(error, ex);
@@ -191,6 +198,10 @@ namespace KRPC.MechJeb {
 		}
 
 		internal static object GetComputerModule(string moduleType) {
+			return GetComputerModule(moduleType, true);
+		}
+
+		internal static object GetComputerModule(string moduleType, bool logMissing) {
 			string[] moduleTypeCandidates = GetModuleTypeCandidates(moduleType);
 			object module = null;
 			foreach(string candidate in moduleTypeCandidates) {
@@ -199,7 +210,8 @@ namespace KRPC.MechJeb {
 					return module;
 			}
 
-			Logger.Severe("MechJeb module " + moduleType + " not found");
+			if(logMissing && !optionalModuleKeys.Contains(moduleType))
+				Logger.Severe("MechJeb module " + moduleType + " not found");
 
 			return module;
 		}
@@ -207,15 +219,15 @@ namespace KRPC.MechJeb {
 		private static string[] GetModuleTypeCandidates(string moduleType) {
 			switch(moduleType) {
 			case "AscentAutopilot":
-				return new[] { "AscentAutopilot", "AscentBaseAutopilot", "AscentSettings", "Ascent" };
+				return new[] { "AscentAutopilot", "AscentBaseAutopilot", "Ascent", "AscentGuidance", "AscentSettings" };
 			case "AscentGuidance":
 				return new[] { "AscentGuidance", "AscentSettings" };
 			case "AscentClassic":
-				return new[] { "AscentClassic", "AscentSettings", "AscentClassicAutopilot" };
+				return new[] { "AscentClassic", "AscentClassicAutopilot" };
 			case "AscentGT":
-				return new[] { "AscentGT", "AscentSettings" };
+				return new[] { "AscentGT" };
 			case "AscentPVG":
-				return new[] { "AscentPVG", "AscentSettings", "AscentPVGAutopilot" };
+				return new[] { "AscentPVG", "AscentPVGAutopilot" };
 			default:
 				return new[] { moduleType };
 			}
